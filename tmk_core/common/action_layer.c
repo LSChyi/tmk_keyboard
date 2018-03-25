@@ -61,6 +61,8 @@ void default_layer_xor(uint32_t state)
  */
 uint32_t layer_state = 0;
 
+uint32_t layer_exit_time[32] = { 0 };
+
 static void layer_state_set(uint32_t state)
 {
     dprint("layer_state: ");
@@ -90,7 +92,11 @@ void layer_on(uint8_t layer)
 
 void layer_off(uint8_t layer)
 {
-    layer_state_set(layer_state & ~(1UL<<layer));
+    uint32_t now = timer_read32();
+    if (now - layer_exit_time[layer] > DOUBLE_TAP_INTERVAL) {
+        layer_state_set(layer_state & ~(1UL<<layer));
+    }
+    layer_exit_time[layer] = now;
 }
 
 void layer_invert(uint8_t layer)
